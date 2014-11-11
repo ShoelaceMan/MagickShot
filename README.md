@@ -14,6 +14,9 @@
 - curl
 - ssh
 - wput
+- imagemagick
+- xdotool
+- sshpass
 
 **INSTALLATION**
 Simply clone the repo, make a config file, and run the script! The config file location is '~/.Scrotum/config', and it should run out-of-box with default settings with the example config!

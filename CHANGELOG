@@ -14,3 +14,18 @@ ADDED: Upload alternatives
 ADDED: FTP
 ADDED: SFTP
 FIXED: Clipboard piping
+
+1.0
+----------
+ADDED: Single window mode
+ADDED: Range mode
+ADDED: Toggleable thumbnail/Notifications
+ADDED: Command line usage
+ADDED: Versioning
+ADDED: Configurable notification/thumbnail length
+ADDED: SFTP private key usage
+ADDED: Option to keep screenshots
+ADDED: Updater
+FIXED: Optimized code
+FIXED: High CPU usage when drawing thumbnails
+FIXED: Blinking/flashing text on uploading notification
