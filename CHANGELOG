@@ -8,3 +8,9 @@ ADDED: Custom filename and file location support
 FIXED: Removed "imgurup.sh" dependency
 FIXED: Home directory location
 
+0.7
+----------
+ADDED: Upload alternatives
+ADDED: FTP
+ADDED: SFTP
+FIXED: Clipboard piping
