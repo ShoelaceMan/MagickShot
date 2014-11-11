@@ -6,7 +6,6 @@
 - Open source!
 - Bash!
 - Scrot!
-- Whee!
 
 **DEPENDENCIES**
 - xclip 
