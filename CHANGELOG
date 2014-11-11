@@ -1,0 +1,10 @@
+0.5
+----------
+ADDED: Config file support
+ADDED: Screen resolution detection
+ADDED: Padding support
+ADDED: Thumbnail sizing
+ADDED: Custom filename and file location support
+FIXED: Removed "imgurup.sh" dependency
+FIXED: Home directory location
+
