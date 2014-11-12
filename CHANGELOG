@@ -29,3 +29,8 @@ ADDED: Updater
 FIXED: Optimized code
 FIXED: High CPU usage when drawing thumbnails
 FIXED: Blinking/flashing text on uploading notification
+
+1.01
+----------
+ADDED: Save format 
+REMOVED: Dependency for 'scrot'

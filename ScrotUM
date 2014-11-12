@@ -21,7 +21,7 @@ THUMBPOSY=$(expr 0 + $THUMBPADY)
 THUMBPOSX=$(expr $RESX - $THUMBWIDTH - $THUMBPADX)
 NOTIFPOSX=$(expr $RESX - $THUMBWIDTH)
 NOTIFPOSY=$THUMBHEIGHT
-SAVEAS="/home/$USER/$SAVEPATH/Screenshot_$FILENAME.png"
+SAVEAS="/home/$USER/$SAVEPATH/Screenshot_$FILENAME.$FORMAT"
 SHOWTHUMB=%1%2%3%4%5%6%7%8%9 | grep -o t
 SHOWNOTIF=%1%2%3%4%5%6%7%8%9 | grep -o n
 MODE=%1%2%3%4%5%6%7%8%9 | grep -o 'r\|w'
@@ -90,7 +90,7 @@ fi
 
 # Command
 if  [ -z ${MODE+x} ]; then
-scrot -c "$SAVEAS"
+import -window root "$SAVEAS"
 echo "Captured as $SAVEAS!"
 fi
 
