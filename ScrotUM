@@ -10,7 +10,7 @@
 DZEN2="$(pidof dzen2)"
 SLEEP=1
 CONFDIR=~/.ScrotUM
-VER=1.0
+VER=1.1
 
 echo "Loading config!"
 source "$CONFDIR/config"
@@ -102,13 +102,13 @@ fi
 
 if [ $SHOWNOTIF = "yes" ]; then
 echo " ^fg($WHITE)Uploading...
-^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;button3=exit' -p 7 &
+^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" | dzen2 -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;lower;button3=exit' -p 3 & export uploadingpid=$!
 fi
 
 # Uploader
 if [[ $UPLOADER = "imgur" ]]; then
     for i in "$SAVEAS"; do
-        curl -# -F "image"=@"$i" -F "key"="4907fcd89e761c6b07eeb8292d5a9b2a" imgur.com/api/upload.xml|\
+        curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
         grep -Eo '<[a-z_]+>http[^<]+'|sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
     done > /tmp/ScrotUM
     grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | xclip -sel c
@@ -118,13 +118,15 @@ fi
 
 if [[ $UPLOADER = "ftp" ]]; then
     wput $SAVEAS ftp://$FTPUSERNAME:$FTPPASSWD@$FTPIP:$FTPPORT/$FTPDIRECTORY > /tmp/ScrotUM
+    kill $uploadingpid
 fi
-
 if [[ $UPLOADER = "sftp" ]] && [ $SFTP_USE_KEY = "yes" ]; then
     scp -i $SFTPKEYFILE -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/ScrotUM
+    kill $uploadingpid
 fi
 if [[ $UPLOADER = "sftp" ]] && [ $SFTP_USE_KEY != "yes" ]; then
     sshpass -p '$SFTPPASSWORD' scp -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/ScrotUM
+    kill $uploadingpid
 fi
 
 
@@ -132,14 +134,24 @@ fi
 while [ $UPLOADER = "imgur" ] && [ $SHOWNOTIF = "yes" ]; do
 
 # Message    
-    echo "^fg($WHITE) $(grep -o 'Original Image:' /tmp/ScrotUM) ^fg($OFFWHITE)^pa(150)$(grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
-^fg($WHITE) Large Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m2 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
-^fg($WHITE) Small Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m3 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
-^fg($WHITE) Imgur Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m4 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
-^fg($WHITE) Delete Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m5 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
+echo "
+^fg($WHITE) $(grep -o 'Direct Link:' /tmp/ScrotUM) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM) 
+^fg($WHITE) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM) ^pa(117)
+^fg($WHITE) Imgur Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM | rev | cut -c 5- | rev) ^pa(117)
 ^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" 
 
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 5 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;button3=exit' -p 7 &
+#############################################################################################################################
+#This section commented out until either imgur makes it clear that the API will no longer send other links to the uploader, or until the feature is re-implemented. Sorry for the inconvenience. (Imgur's fault.)
+#
+#   echo "^fg($WHITE) $(grep -o 'Direct Image URL:' /tmp/ScrotUM) ^fg($OFFWHITE)^pa(150)$(grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
+#^fg($WHITE) Large Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m2 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
+#^fg($WHITE) Small Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m3 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
+#^fg($WHITE) Imgur Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m4 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
+#^fg($WHITE) Delete Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m5 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
+#^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" 
+#
+#############################################################################################################################
+    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 3 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 & kill $uploadingpid
 
 while [ $UPLOADER = "ftp" ] && [ $SHOWNOTIF = "yes" ]; do
     # Message
@@ -147,14 +159,14 @@ while [ $UPLOADER = "ftp" ] && [ $SHOWNOTIF = "yes" ]; do
     echo "^fg($WHITE) "Uploaded To:" ^fg($OFFWHITE)^pa(150)$( grep ftp:// /tmp/ScrotUM | tr ' ' '\n' | grep ftp://) 
 ^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
 
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;button3=exit' -p 7 &
+    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 &
 
 while [ $UPLOADER = "sftp" ] && [ $SHOWNOTIF = "yes" ]; do
     # Message
     
     echo "^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
 
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;button3=exit' -p 7 &
+    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 &
 
 # Cleaner
 if [ $KEEPCOPY = "no" ]; then
