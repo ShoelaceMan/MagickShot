@@ -1,4 +1,5 @@
 **DESCRIPTION**
+
 MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a specified folder, shows a thumbnail, uploads it to a range of optional uploaders, and finally, copies the link to your clipboard. I have it bound to the printscr button on my machine, it makes sharing desktops very snappy!
 
 **FEATURES**
