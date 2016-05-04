@@ -34,3 +34,8 @@ FIXED: Blinking/flashing text on uploading notification
 ----------
 ADDED: Save format 
 REMOVED: Dependency for 'scrot'
+
+1.1
+----------
+FIXED: Updated to new Imgur API
+ADDED: Renamed to MagickShot
