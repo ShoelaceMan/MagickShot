@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# 2014 ShoelaceGuy <beast123113 at gmail dot com>
-# ScrotUM (SCReen shOT Upload Manager)
+# 2014 ShoelaceMan <beast123113 at gmail dot com>
+# MagickShot
 #
 # Licensed under WTFPL 2.0
 # >> http://www.wtfpl.net/txt/copying/
@@ -9,7 +9,7 @@
 
 DZEN2="$(pidof dzen2)"
 SLEEP=1
-CONFDIR=~/.ScrotUM
+CONFDIR=~/.MagickShot
 VER=1.1
 
 echo "Loading config!"
@@ -28,7 +28,7 @@ MODE=%1%2%3%4%5%6%7%8%9 | grep -o 'r\|w'
 
 # Help
 if [[ $1 = "-h" ]]; then
-echo "Usage : ScrotUM [-tnwrhvc] [-d path] [-s screen] [-u uploader] [filename.png]
+echo "Usage : MagickShot [-tnwrhvc] [-d path] [-s screen] [-u uploader] [filename.png]
     -d path     : save the shot in <path>
     -s screen   : use only the screen number <screen> for the shot
     -u uploader : upload the file using specified uploader, or <$UPLOADER> if none passed
@@ -41,34 +41,34 @@ echo "Usage : ScrotUM [-tnwrhvc] [-d path] [-s screen] [-u uploader] [filename.p
     -v          : display version info
 
 Configuration:
-    ScrotUM sources /home/$USER/.ScrotUM/config at start.
+    MagickShot sources /home/$USER/.MagickShot/config at start.
     You can pass arguments here, so that they will overide the sourced preferences."
 exit
 fi
 
 if [[ $1 = "-s" ]] && [ -z ${2+x} ]; then
-echo "Usage : ScrotUM [-s screen]
+echo "Usage : MagickShot [-s screen]
 Description:
     Only scrot the specified screen number, then upload as defined."
 exit
 fi
 
 if [[ $1 = "-d" ]] && [ -z ${2+x} ]; then
-echo "Usage : ScrotUM [-d path]
+echo "Usage : MagickShot [-d path]
 Description:
     Save the scrot to a specified directory."
 exit
 fi
 
 if [[ $1 = "-u" ]] && [ -z ${2+x} ]; then
-echo "Usage : ScrotUM [-d path]
+echo "Usage : MagickShot [-d path]
 Description:
     Upload using the specified uploader. Available options are: imgur, ftp, sftp."
 exit
 fi
 
 if [[ $1 = "-v" ]]; then
-echo "ScrotUM $VER"
+echo "MagickShot $VER"
 exit
 fi
 
@@ -96,8 +96,8 @@ fi
 
 # Thumbnail
 if [ $SHOWTHUMB = "yes" ]; then
-convert $SAVEAS -resize $THUMBHEIGHTx$THUMBWIDTH /tmp/ScrotUMThumb.xpm
-echo "^i(/tmp/ScrotUMThumb.xpm)" | dzen2 -p -bg $BG -fg $YELLOW -y $THUMBPOSY -x $THUMBPOSX -fn $FONT -w $THUMBWIDTH -h $THUMBHEIGHT -ta l -e "onstart=uncollapse;button2=exit" &
+convert $SAVEAS -resize $THUMBHEIGHTx$THUMBWIDTH /tmp/MagickShotThumb.xpm
+echo "^i(/tmp/MagickShotThumb.xpm)" | dzen2 -p -bg $BG -fg $YELLOW -y $THUMBPOSY -x $THUMBPOSX -fn $FONT -w $THUMBWIDTH -h $THUMBHEIGHT -ta l -e "onstart=uncollapse;button2=exit" &
 fi
 
 if [ $SHOWNOTIF = "yes" ]; then
@@ -110,53 +110,41 @@ if [[ $UPLOADER = "imgur" ]]; then
     for i in "$SAVEAS"; do
         curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
         grep -Eo '<[a-z_]+>http[^<]+'|sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
-    done > /tmp/ScrotUM
-    grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | xclip -sel c
-    grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | xclip
-    cat /tmp/ScrotUM
+    done > /tmp/MagickShot
+    grep -o -m1 "http://.*imgur.*" /tmp/MagickShot | xclip -sel c
+    grep -o -m1 "http://.*imgur.*" /tmp/MagickShot | xclip
+    cat /tmp/MagickShot
 fi
 
 if [[ $UPLOADER = "ftp" ]]; then
-    wput $SAVEAS ftp://$FTPUSERNAME:$FTPPASSWD@$FTPIP:$FTPPORT/$FTPDIRECTORY > /tmp/ScrotUM
+    wput $SAVEAS ftp://$FTPUSERNAME:$FTPPASSWD@$FTPIP:$FTPPORT/$FTPDIRECTORY > /tmp/MagickShot
     kill $uploadingpid
 fi
 if [[ $UPLOADER = "sftp" ]] && [ $SFTP_USE_KEY = "yes" ]; then
-    scp -i $SFTPKEYFILE -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/ScrotUM
+    scp -i $SFTPKEYFILE -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/MagickShot
     kill $uploadingpid
 fi
 if [[ $UPLOADER = "sftp" ]] && [ $SFTP_USE_KEY != "yes" ]; then
-    sshpass -p '$SFTPPASSWORD' scp -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/ScrotUM
+    sshpass -p '$SFTPPASSWORD' scp -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/MagickShot
     kill $uploadingpid
 fi
-
 
 # Notifier
 while [ $UPLOADER = "imgur" ] && [ $SHOWNOTIF = "yes" ]; do
 
 # Message    
 echo "
-^fg($WHITE) $(grep -o 'Direct Link:' /tmp/ScrotUM) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM) 
-^fg($WHITE) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM) ^pa(117)
-^fg($WHITE) Imgur Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/ScrotUM | rev | cut -c 5- | rev) ^pa(117)
+^fg($WHITE) $(grep -o 'Direct Link:' /tmp/MagickShot) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot) 
+^fg($WHITE) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot) ^pa(117)
+^fg($WHITE) Imgur Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot | rev | cut -c 5- | rev) ^pa(117)
 ^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" 
 
-#############################################################################################################################
-#This section commented out until either imgur makes it clear that the API will no longer send other links to the uploader, or until the feature is re-implemented. Sorry for the inconvenience. (Imgur's fault.)
-#
-#   echo "^fg($WHITE) $(grep -o 'Direct Image URL:' /tmp/ScrotUM) ^fg($OFFWHITE)^pa(150)$(grep -o -m1 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
-#^fg($WHITE) Large Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m2 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) 
-#^fg($WHITE) Small Thumbnail: ^fg($OFFWHITE)^pa(150)$(grep -o -m3 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
-#^fg($WHITE) Imgur Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m4 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
-#^fg($WHITE) Delete Page: ^fg($OFFWHITE)^pa(150)$(grep -o -m5 "http://.*imgur.*" /tmp/ScrotUM | tail -n1) ^pa(117)
-#^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" 
-#
-#############################################################################################################################
     done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 3 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 & kill $uploadingpid
 
 while [ $UPLOADER = "ftp" ] && [ $SHOWNOTIF = "yes" ]; do
     # Message
     
-    echo "^fg($WHITE) "Uploaded To:" ^fg($OFFWHITE)^pa(150)$( grep ftp:// /tmp/ScrotUM | tr ' ' '\n' | grep ftp://) 
+    echo "^fg($WHITE) "Uploaded To:" ^fg($OFFWHITE)^pa(150)$( grep ftp:// /tmp/MagickShot | tr ' ' '\n' | grep ftp://) 
 ^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
 
     done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 &
