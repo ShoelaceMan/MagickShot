@@ -1,56 +1,20 @@
-# Font
-FONT="-artwiz-cure-medium-r-normal-*-14-*-*-*-*-*-*-*"
-
 # Colors
-BG="#151515"
-FG="#303030"
-
-OFFWHITE="#E7E7E7"
-
-WHITE="#FFFFFF"
-
-RED="#E84F4F"
-
-GREEN="#B8D68C"
-
-YELLOW="#E1AA5D"
-
-BLUE="#7DC1CF"
-
-MAGENTA="#9B64FB"
-
-CYAN="#0088CC"
+bg="#151515"
+fg="#303030"
 
 # Geometry
-THUMBHEIGHT=272
-THUMBWIDTH=500
-THUMBPADX=0
-THUMBPADY=0
+thumbwidth=640
+thumbheight=372
+thumbpadx=0
+thumbpady=438
 
 # Save Location
-KEEPCOPY=yes
-FILENAME=$(date +"%m_%d_%Y_%T")
-SAVEPATH="Documents/Pictures/Screenshots/Arch"
-
-# FTP
-FTPDIRECTORY=
-FTPUSERNAME=
-FTPPASSWD=
-FTPIP=
-FTPPORT=21
-
-# SFTP
-SFTP_USE_KEY_FILE=no
-SFTPDIRECTORY=
-SFTPUSERNAME=
-SFTPKEYFILE=
-SFTPPASSWD=
-SFTPIP=
-SFTPPORT=22
+keepcopy=yes
+filename=$(date +"%m_%d_%Y_%T")
+savepath="Documents/Pictures/Screenshots"
 
 # Other
-UPLOADER=imgur
-KILLDELAY=6
-SHOWTHUMB=yes
-SHOWNOTIF=yes
-FORMAT=png
+uploader=imgur
+killdelay=6
+showthumb=yes
+format=png

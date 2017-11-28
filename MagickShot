@@ -1,184 +1,191 @@
 #!/bin/bash
 #
-# 2014 ShoelaceMan <beast123113 at gmail dot com>
+# 2017 Trent Arcuri <trent.arcuri@gmail.com>
 # MagickShot
 #
-# Licensed under WTFPL 2.0
-# >> http://www.wtfpl.net/txt/copying/
-#
 
-DZEN2="$(pidof dzen2)"
-SLEEP=1
-CONFDIR=~/.MagickShot
-VER=2.0
+confdir=~/.MagickShot
+ver=3.0
 
 echo "Loading config!"
-source "$CONFDIR/config"
+source "$confdir/config"
 
-RESX=$(xdpyinfo  | grep 'dimensions:' | tr ' ' '\n' | grep -m1 x | tr 'x' '\n' | grep -m1 '')
-RESY=$(xdpyinfo  | grep 'dimensions:' | tr ' ' '\n' | grep -m1 x | tr 'x' '\n' | grep -m2 '' | tail -n1)
-THUMBPOSY=$(expr 0 + $THUMBPADY)
-THUMBPOSX=$(expr $RESX - $THUMBWIDTH - $THUMBPADX)
-NOTIFPOSX=$(expr $RESX - $THUMBWIDTH)
-NOTIFPOSY=$THUMBHEIGHT
-SAVEAS="/home/$USER/$SAVEPATH/Screenshot_$FILENAME.$FORMAT"
-SHOWTHUMB=%1%2%3%4%5%6%7%8%9 | grep -o t
-SHOWNOTIF=%1%2%3%4%5%6%7%8%9 | grep -o n
-MODE=%1%2%3%4%5%6%7%8%9 | grep -o 'r\|w'
+resx=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $2}')
+resy=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $3}')
+thumbposy=$thumbpady
+thumbposx=$(($resx - $thumbwidth - $thumbpadx))
+saveas="$HOME/$savepath/Screenshot_$filename.$format"
+thumbfile=$(mktemp --suffix=.xpm)
+outfile=$(mktemp)
+
+dzenthumbopts=(
+"-p $killdelay"
+"-bg $bg"
+"-fg $fg"
+"-y $thumbposy"
+"-x $thumbposx"
+"-w $thumbwidth"
+"-h $thumbheight"
+"-ta l"
+'-e "onstart=uncollapse;button2=exit"'
+)
 
 usage()
 {
-  echo "Usage : MagickShot [-tnwrhvc] [-d path] [-s screen] [-u uploader] [filename.png]
-      -d path     : save the shot in <path>
-      -s screen   : use only the screen number <screen> for the shot
-      -u uploader : upload the file using specified uploader, or <$UPLOADER> if none passed
-      -t          : hide thumbnail
-      -n          : hide notification
-      -w          : take screenshot of a specific window (choose with pointer)
-      -r          : take screenshot of a specific region (choose with pointer)
-      -h          : display this help
-      -v          : display version info
+  echo """Usage: $(basename $0) [<arguments>]
+      -o <path>       Save screenshot in <path>
+      -s <screen>     Take screenshot of a specific screen
+      -u <uploader>   Upload the file using specified uploader
+      -t              Hide thumbnail
+      -w              Take screenshot of a specific window
+      -r              Take screenshot of a specific region
+      -d              Take screenshot of the entire display server
+      -h              Display this help dialogue
+      -v              Display version info"""
+}
 
-    Configuration:
-      MagickShot sources /home/$USER/.MagickShot/config at start.
-      You can pass arguments here, so that they will overide the sourced preferences."
-  exit
-
-  if [ -z ${2+x} ]; then
-    echo "Usage : MagickShot [-s screen]
-    Description:
-      Only screenshot the specified screen number, then upload as defined."
-    exit
-  fi
-
-  if [ -z ${2+x} ]; then
-    echo "Usage : MagickShot [-d path]
-    Description:
-      Save the screenshot to a specified directory."
-    exit
-  fi
-
-  if [ -z ${2+x} ]; then
-    echo "Usage : MagickShot [-d path]
-    Description:
-      Upload using the specified uploader. Available options are: imgur, ftp, sftp."
-    exit
+cleanup()
+{
+  rm $thumbfile $outfile
+  if [ $keepcopy = "no" ]; then
+    rm -rf $saveas
   fi
 }
 
 default()
 {
-  import -window root "$SAVEAS"
-  echo "Captured as $SAVEAS!"
+  import -window root "$saveas"
+  echo "Captured as $saveas!"
 }
 
 range()
 {
   echo "Range mode enabled!"
-  import root $SAVEAS
+  import $saveas
 }
 
 window()
 {
   echo "Window mode enabled!"
-  import -window $(xdotool selectwindow) $SAVEAS
+  import -window $(xdotool selectwindow) $saveas
 }
 
-case "$1" in
-  '-h')
-      usage
-    ;;
+thumbnail()
+{
+  if [ $showthumb = "yes" ]; then
+    convert $saveas -resize "$thumbwidth"x"$thumbheight" $thumbfile
+    echo "^i($thumbfile)" | dzen2 ${dzenthumbopts[@]}
+  fi
 
-  '-v')
-      echo "MagickShot $VER"
-    ;;
+}
 
-  '-r')
-    range
-  ;;
+upload()
+{
+  case "$uploader" in
+    "imgur")
+      for i in "$saveas"; do
+        curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" \
+          -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
+          grep -Eo '<[a-z_]+>http[^<]+'|\
+          sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
+      done | tee $outfile
+      ;;
+    ?*)
+      echo "$uploader is not a valid option."
+      exit 1
+  esac
 
-  '-w')
-    window
-  ;;
+  echo "Uploading complete!"
+  cat $outfile | awk '{print $2}' | xclip
+}
 
-  '')
-    default
-  ;;
+premain(){
+  #Argument parsing
+  if [[ -z $@ ]]; then
+    usage
+    exit 1
+  fi
 
-esac
+  local argv=("$@");
+  # argc is the count of arguments
+  local argc=${#argv[@]};
 
-# Thumbnail
-if [ $SHOWTHUMB = "yes" ]; then
-  convert $SAVEAS -resize $THUMBHEIGHTx$THUMBWIDTH /tmp/MagickShotThumb.xpm
-  echo "^i(/tmp/MagickShotThumb.xpm)" | dzen2 -p -bg $BG -fg $YELLOW -y $THUMBPOSY -x $THUMBPOSX -fn $FONT -w $THUMBWIDTH -h $THUMBHEIGHT -ta l -e "onstart=uncollapse;button2=exit" &
-fi
+  # this is important to ensure globbing is active
+  shopt -s extglob;
 
-if [ $SHOWNOTIF = "yes" ]; then
-  echo " ^fg($WHITE)Uploading...
-  ^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)" | dzen2 -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;lower;button3=exit' -p 3 & export uploadingpid=$!
-fi
+  # Handle compressed short options
+  re="(^| )\\-[[:alnum:]]{2,}"; # regex to detect shortoptions
+  # we evaluate this as a long string, thus ${argv[*]}, instead of ${argv[@]}
+  if [[ "${argv[*]}" =~ $re ]]; then
+    local compiled_args=();
+    for ((i=0; i<argc; i++)); do
+      if [[ "${argv[$i]}" =~ $re ]]; then
+        local compressed_args="${argv[$i]#*-}";
+        for ((r=0; r<${#compressed_args}; r++)); do
+          compiled_args+=("-${compressed_args:$r:1}");
+        done
+        shift;
+        compiled_args+=("$@");
+        ## recurse
+        premain "${compiled_args[@]}";
+        ## we "pass" the exit code back up the recursions to the OS
+        exit $?;
+      fi
+      compiled_args+=("${argv[$i]}");
+      shift;
+    done
+    exit;
+  fi
 
-# Uploader
-case "$UPLOADER" in
-  "ftp")
-    wput $SAVEAS ftp://$FTPUSERNAME:$FTPPASSWD@$FTPIP:$FTPPORT/$FTPDIRECTORY > /tmp/MagickShot
-    kill $uploadingpid
-  ;;
+  while [ "$1" != ""  ]; do
+    case "$1" in
+      '-h')
+        usage
+        exit
+        ;;
+      '-v')
+        echo "MagickShot $VER"
+        exit
+        ;;
+      '-t')
+        echo "Hiding thumbnail!"
+        showthumb=no
+        ;;
+      '-s')
+        shift
+        :
+        ;;
+      '-o','--output')
+        shift
+        saveas=$1
+        ;;
+      '-u','--uploader')
+        shift
+        uploader=$1
+        ;;
+      '-r')
+        range
+        ;;
+      '-w')
+        window
+        ;;
+      '-d')
+        default
+        ;;
+      -?*)
+        printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+    esac
+    shift
+  done
 
-  "sftp")
-    if [ $SFTP_USE_KEY = "yes" ]; then
-      scp -i $SFTPKEYFILE -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/MagickShot
-      kill $uploadingpid
-    else
-      sshpass -p '$SFTPPASSWORD' scp -P $SFTPPORT $SAVEFILE $SFTPUSERNAME@$SFTPIP:$SFTPDIRECTORY > /tmp/MagickShot
-    fi
-    kill $uploadingpid
-  ;;
+  main
+}
 
-  "imgur")
-    for i in "$SAVEAS"; do
-      curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
-      grep -Eo '<[a-z_]+>http[^<]+'|sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
-    done > /tmp/MagickShot
-    cat /tmp/MagickShot | awk '{print $2}' | xclip
-  ;;
-esac
+main()
+{
+  thumbnail
+  upload
+  cleanup
+}
 
-# Notifier
-while [ $UPLOADER = "imgur" ] && [ $SHOWNOTIF = "yes" ]; do
-
-# Message
-echo "
-^fg($WHITE) $(grep -o 'Direct Link:' /tmp/MagickShot) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot)
-^fg($WHITE) Direct Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot) ^pa(117)
-^fg($WHITE) Imgur Link: ^fg($OFFWHITE)^pa(150)$(grep -o "http://.*imgur.*" /tmp/MagickShot | rev | cut -c 5- | rev) ^pa(117)
-^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
-
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 3 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 & kill $uploadingpid
-
-while [ $UPLOADER = "ftp" ] && [ $SHOWNOTIF = "yes" ]; do
-    # Message
-
-    echo "^fg($WHITE) "Uploaded To:" ^fg($OFFWHITE)^pa(150)$( grep ftp:// /tmp/MagickShot | tr ' ' '\n' | grep ftp://)
-^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
-
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -l 1 -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 &
-
-while [ $UPLOADER = "sftp" ] && [ $SHOWNOTIF = "yes" ]; do
-    # Message
-
-    echo "^ib(2)^fg($BLUE)"Screenshot saved as "$FILENAME"!"^pa(2)"
-
-    done | dzen2 -p -bg $BG -fg $YELLOW -y $NOTIFPOSY -x $NOTIFPOSX -fn $FONT -w $THUMBWIDTH -ta l -e 'onstart=uncollapse;raise;button3=exit' -p 7 &
-
-# Cleaner
-if [ $KEEPCOPY = "no" ]; then
-  rm -rf $SAVEAS
-fi
-
-# Kill
-if [[ "$DZEN2" -gt 0 ]]; then
-  sleep $KILLDELAY && rm -rf /tmp/MagickSho* && exit
-else
-  sleep $KILLDELAY && killall dzen2 & exit
-fi
+premain "$@"
