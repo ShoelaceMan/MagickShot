@@ -12,14 +12,12 @@ MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a spec
 - Scrot!
 
 **DEPENDENCIES**
-- xclip 
+- xclip
 - curl
 - imagemagick
 - ssh (For sftp)
-- wput (For ftp)
 - dzen (xmp support needed for thumbnail popup)
 - xdotool (For window capturing)
-- sshpass (For automatic password sending, unneeded for cli)
 
 **INSTALLATION**
 
