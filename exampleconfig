@@ -4,9 +4,9 @@ fg="#303030"
 
 # Geometry
 thumbwidth=640
-thumbheight=372
 thumbpadx=0
 thumbpady=438
+anchor=l
 
 # Save Location
 keepcopy=yes

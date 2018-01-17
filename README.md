@@ -8,15 +8,13 @@ MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a spec
 - Dzen2 tooltips!
 - Thumbnail popup!
 - Open source!
-- Bash!
-- Scrot!
 
 **DEPENDENCIES**
 - xclip
 - curl
 - imagemagick
-- ssh (For sftp)
-- dzen (xmp support needed for thumbnail popup)
+- xdpyinfo
+- dzen (xpm support needed for thumbnail popup)
 - xdotool (For window capturing)
 
 **INSTALLATION**

@@ -24,9 +24,7 @@ dzenthumbopts=(
 "-fg $fg"
 "-y $thumbposy"
 "-x $thumbposx"
-"-w $thumbwidth"
-"-h $thumbheight"
-"-ta l"
+"-ta $anchor"
 '-e "onstart=uncollapse;button2=exit"'
 )
 
@@ -61,19 +59,31 @@ default()
 range()
 {
   echo "Range mode enabled!"
-  import $saveas
+  if import $saveas; then
+    :
+  else
+    exit 1
+  fi
 }
 
 window()
 {
   echo "Window mode enabled!"
-  import -window $(xdotool selectwindow) $saveas
+  if import -window $(xdotool selectwindow) $saveas; then
+    :
+  else
+    exit 1
+  fi
 }
 
 thumbnail()
 {
   if [ $showthumb = "yes" ]; then
-    convert $saveas -resize "$thumbwidth"x"$thumbheight" $thumbfile
+    convert $saveas -scale "$thumbwidth" $thumbfile
+    dzenthumbopts+=(
+    "-w $(identify -format "%w" $thumbfile)"
+    "-h $(identify -format "%h" $thumbfile)"
+    )
     echo "^i($thumbfile)" | dzen2 ${dzenthumbopts[@]}
   fi
 
