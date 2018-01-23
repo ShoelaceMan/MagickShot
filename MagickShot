@@ -106,7 +106,7 @@ upload()
   esac
 
   echo "Uploading complete!"
-  cat $outfile | awk '{print $2}' | xclip
+  cat $outfile | awk '{print $2}' | $clipboard
 }
 
 premain(){
@@ -193,7 +193,7 @@ premain(){
 
 main()
 {
-  thumbnail
+  thumbnail&
   upload
   cleanup
 }

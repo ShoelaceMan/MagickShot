@@ -10,7 +10,6 @@ MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a spec
 - Open source!
 
 **DEPENDENCIES**
-- xclip
 - curl
 - imagemagick
 - xdpyinfo
@@ -19,7 +18,7 @@ MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a spec
 
 **INSTALLATION**
 
-Simply clone the repo, make a config file, and run the script! The config file location is '~/.MagickShot/config', and it should run out-of-box with default settings with the example config!
+Simply clone the repo, make a config file, and run the script! The config file location is '~/.MagickShot/config', and it should run out-of-box with default settings with the example config (once you create the save path in the example config)!
 
 **SCREENSHOT**
 
