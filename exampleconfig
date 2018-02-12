@@ -21,14 +21,16 @@ anchor=r
 # Save Location
 keepcopy=yes
 filename=$(date +"%m_%d_%Y_%T")
-savepath="Documents/Pictures/Screenshots/$NAME"
+imagepath="Documents/Pictures/Screenshots/$NAME"
+videopath="Documents/Videos/Screenrecord/$NAME"
 
 # Other
 uploader=imgur
 clipboard=xclip
 killdelay=6
 showthumb=yes
-format=png
+imageformat=png
+videoformat=webm
 
 # Functions, and manipulation
 #  Everything is directly sourced, modify with caution.
@@ -44,6 +46,13 @@ dzenthumbopts=(
 "-x $thumbposx"
 "-ta $anchor"
 '-e "onstart=uncollapse;button2=exit"'
+)
+
+ffmpegopts=(
+"-f pulse"
+"-i default"
+"-ac 2"
+"-framerate 25"
 )
 
 imgur()

@@ -3,18 +3,15 @@
 MagickShot is an ImageMagick wrapper that takes a screenshot, saves it to a specified folder, shows a thumbnail, uploads it to a range of optional uploaders, and finally, copies the link to your clipboard. I have it bound to the printscr button on my machine, it makes sharing desktops very snappy!
 
 **FEATURES**
-- Auto upload to imgur!
-- Imgur link listing action!
-- Dzen2 tooltips!
+- Auto upload!
 - Thumbnail popup!
 - Open source!
 
 **DEPENDENCIES**
-- curl
-- imagemagick
-- xdpyinfo
-- dzen (xpm support needed for thumbnail popup)
-- xdotool (For window capturing)
+- imagemagick for images
+- ffmpeg for video
+- slop for range
+- dzen for thumbnail
 
 **INSTALLATION**
 

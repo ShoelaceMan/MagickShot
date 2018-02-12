@@ -5,14 +5,13 @@
 #
 
 confdir=~/.MagickShot
-ver=3.1
+ver=3.2
 
 echo "Loading config!"
 source "$confdir/config"
 
 resx=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $2}')
 resy=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $3}')
-saveas="$HOME/$savepath/Screenshot_$filename.$format"
 thumbfile=$(mktemp --suffix=.xpm)
 outfile=$(mktemp)
 
@@ -20,12 +19,12 @@ usage()
 {
   echo """Usage: $(basename $0) [<arguments>]
       -o <path>       Save screenshot in <path>
-      -s <screen>     Take screenshot of a specific screen
       -u <uploader>   Upload the file using specified uploader
       -t              Hide thumbnail
-      -w              Take screenshot of a specific window
-      -r              Take screenshot of a specific region
-      -d              Take screenshot of the entire display server
+      -s              Specify region using slop (Must be used with -i or -v)
+      -r              Take a recording
+      -i              Take a screenshot
+      -d              Use entire display server as region
       -h              Display this help dialogue
       -v              Display version info"""
 }
@@ -44,24 +43,24 @@ default()
   echo "Captured as $saveas!"
 }
 
-range()
+slopread()
 {
-  echo "Range mode enabled!"
-  if import $saveas; then
-    :
-  else
-    exit 1
-  fi
+  # Read slop input
+  echo "Running slop!"
+  read -r X Y W H G ID < <(slop -f "%x %y %w %h %g %i")
 }
 
-window()
+image()
 {
-  echo "Window mode enabled!"
-  if import -window $(xdotool selectwindow) $saveas; then
-    :
-  else
-    exit 1
-  fi
+  saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
+  import -window root -crop $G "$saveas"
+}
+
+video()
+{
+  saveas="$HOME/$videopath/Screenrecord_$filename.$videoformat"
+  ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y ${ffmpegopts[@]} "$saveas"
+  beep
 }
 
 thumbnail()
@@ -114,7 +113,7 @@ main()
         shift;
         compiled_args+=("$@");
         ## recurse
-        premain "${compiled_args[@]}";
+        main "${compiled_args[@]}";
         ## we "pass" the exit code back up the recursions to the OS
         exit $?;
       fi
@@ -138,10 +137,6 @@ main()
         echo "Hiding thumbnail!"
         showthumb=no
         ;;
-      '-s')
-        shift
-        :
-        ;;
       '-o','--output')
         shift
         saveas=$1
@@ -150,11 +145,14 @@ main()
         shift
         uploader=$1
         ;;
-      '-r')
-        range
+      '-s')
+        slopread
         ;;
-      '-w')
-        window
+      '-r')
+        video
+        ;;
+      '-i')
+        image
         ;;
       '-d')
         default
@@ -166,7 +164,7 @@ main()
   done
 
   # First make directories
-  mkdir -p $HOME/$savepath/
+  mkdir -p $HOME/$imagepath/ $HOME/$videopath/
 
   # Thumbnail in parallel
   thumbnail&
