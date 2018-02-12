@@ -5,7 +5,7 @@
 #
 
 confdir=~/.MagickShot
-ver=3.0
+ver=3.1
 
 echo "Loading config!"
 source "$confdir/config"
@@ -17,16 +17,6 @@ thumbposx=$(($resx - $thumbwidth - $thumbpadx))
 saveas="$HOME/$savepath/Screenshot_$filename.$format"
 thumbfile=$(mktemp --suffix=.xpm)
 outfile=$(mktemp)
-
-dzenthumbopts=(
-"-p $killdelay"
-"-bg $bg"
-"-fg $fg"
-"-y $thumbposy"
-"-x $thumbposx"
-"-ta $anchor"
-'-e "onstart=uncollapse;button2=exit"'
-)
 
 usage()
 {
@@ -91,25 +81,15 @@ thumbnail()
 
 upload()
 {
-  case "$uploader" in
-    "imgur")
-      for i in "$saveas"; do
-        curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" \
-          -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
-          grep -Eo '<[a-z_]+>http[^<]+'|\
-          sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
-      done | tee $outfile
-      ;;
-    ?*)
-      echo "$uploader is not a valid option."
-      exit 1
-  esac
-
+  for i in "$saveas"; do
+    $uploader
+  done | tee $outfile
   echo "Uploading complete!"
   cat $outfile | awk '{print $2}' | $clipboard
 }
 
-premain(){
+main()
+{
   #Argument parsing
   if [[ -z $@ ]]; then
     usage
@@ -131,8 +111,7 @@ premain(){
     for ((i=0; i<argc; i++)); do
       if [[ "${argv[$i]}" =~ $re ]]; then
         local compressed_args="${argv[$i]#*-}";
-        for ((r=0; r<${#compressed_args}; r++)); do
-          compiled_args+=("-${compressed_args:$r:1}");
+        for ((r=0; r<${#compressed_args}; r++)); do compiled_args+=("-${compressed_args:$r:1}");
         done
         shift;
         compiled_args+=("$@");
@@ -188,14 +167,15 @@ premain(){
     shift
   done
 
-  main
-}
+  # First make directories
+  mkdir -p $HOME/$savepath/
 
-main()
-{
+  # Thumbnail in parallel
   thumbnail&
   upload
+
+  #Cleanup
   cleanup
 }
 
-premain "$@"
+main "$@"

@@ -1,20 +1,52 @@
+source /etc/os-release
+
 # Colors
 bg="#151515"
 fg="#303030"
+offwhite="#E7E7E7"
+white="#FFFFFF"
+red="#E84F4F"
+green="#B8D68C"
+yellow="#E1AA5D"
+blue="#7DC1CF"
+magenta="#9B64FB"
+cyan="#0088CC"
 
 # Geometry
-thumbwidth=640
+thumbwidth=332
 thumbpadx=0
 thumbpady=438
-anchor=l
+anchor=r
 
 # Save Location
 keepcopy=yes
 filename=$(date +"%m_%d_%Y_%T")
-savepath="Documents/Pictures/Screenshots"
+savepath="Documents/Pictures/Screenshots/$NAME"
 
 # Other
 uploader=imgur
+clipboard=xclip
 killdelay=6
 showthumb=yes
 format=png
+
+# Functions, and manipulation
+#  Everything is directly sourced, modify with caution.
+#  If you want a custom uploader, it goes here.
+dzenthumbopts=(
+"-p $killdelay"
+"-bg $bg"
+"-fg $fg"
+"-y $thumbposy"
+"-x $thumbposx"
+"-ta $anchor"
+'-e "onstart=uncollapse;button2=exit"'
+)
+
+imgur()
+{
+  curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" \
+    -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
+    grep -Eo '<[a-z_]+>http[^<]+'|\
+    sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
+}
