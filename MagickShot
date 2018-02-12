@@ -12,8 +12,6 @@ source "$confdir/config"
 
 resx=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $2}')
 resy=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $3}')
-thumbposy=$thumbpady
-thumbposx=$(($resx - $thumbwidth - $thumbpadx))
 saveas="$HOME/$savepath/Screenshot_$filename.$format"
 thumbfile=$(mktemp --suffix=.xpm)
 outfile=$(mktemp)
