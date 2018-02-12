@@ -39,6 +39,7 @@ cleanup()
 
 default()
 {
+  saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
   import -window root "$saveas"
   echo "Captured as $saveas!"
 }
@@ -52,12 +53,14 @@ slopread()
 
 image()
 {
+  ft=image
   saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
   import -window root -crop $G "$saveas"
 }
 
 video()
 {
+  ft=video
   saveas="$HOME/$videopath/Screenrecord_$filename.$videoformat"
   ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y ${ffmpegopts[@]} "$saveas"
   beep
