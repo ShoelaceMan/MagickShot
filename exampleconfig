@@ -33,6 +33,9 @@ format=png
 # Functions, and manipulation
 #  Everything is directly sourced, modify with caution.
 #  If you want a custom uploader, it goes here.
+thumbposy=$thumbpady
+thumbposx=$(($resx - $thumbwidth - $thumbpadx))
+
 dzenthumbopts=(
 "-p $killdelay"
 "-bg $bg"
