@@ -85,7 +85,10 @@ upload()
     $uploader
   done | tee $outfile
   echo "Uploading complete!"
-  cat $outfile | awk '{print $2}' | $clipboard
+  for i in $(cat $outfile | awk '{print $2}'); do
+    echo $i|$clipboard
+    sleep .1 #Wait for deletion hash
+  done
 }
 
 main()

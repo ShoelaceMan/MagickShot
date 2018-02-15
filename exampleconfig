@@ -58,7 +58,7 @@ ffmpegopts=(
 imgur()
 {
   curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" \
-    -F "image"=@"$i" https://api.imgur.com/3/upload.xml|\
-    grep -Eo '<[a-z_]+>http[^<]+'|\
+    -F "image"=@"$i" https://api.imgur.com/3/upload.xml |\
+    grep -Eo '<deletehash>[^<]+|<[a-z_]+>http[^<]+'|\
     sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
 }
