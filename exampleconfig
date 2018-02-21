@@ -16,6 +16,7 @@ cyan="#0088CC"
 thumbwidth=332
 thumbpadx=0
 thumbpady=0
+thumbanchor=l
 anchor=l
 
 # Save Location
@@ -41,13 +42,14 @@ thumbposy=$(xdotool getmouselocation|sed 's/:/ /g'|awk '{print $4}')
 
 dzenthumbopts=(
 "-p $killdelay"
-"-bg $bg"
-"-fg $fg"
 "-y $thumbposy"
 "-x $thumbposx"
-"-ta $anchor"
+"-ta $thumbanchor"
+"-sa $anchor"
+"-w 480"
+"-l 2"
 "-e"
-'onstart=uncollapse;button1=exit'
+'onstart=collapse;entertitle=uncollapse;leavetitle=collapse;button1=exit'
 )
 
 ffmpegopts=(

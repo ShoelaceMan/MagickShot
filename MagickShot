@@ -70,10 +70,10 @@ thumbnail()
   if [ $showthumb = "yes" ]; then
     convert $saveas -scale "$thumbwidth" $thumbfile
     dzenthumbopts+=(
-    "-w $(identify -format "%w" $thumbfile)"
+    "-tw $(identify -format "%w" $thumbfile)"
     "-h $(identify -format "%h" $thumbfile)"
     )
-    echo "^i($thumbfile)" | dzen2 ${dzenthumbopts[@]}
+    (echo "^i($thumbfile)";tail -f $outfile)|dzen2 ${dzenthumbopts[@]}
   fi
 
 }
