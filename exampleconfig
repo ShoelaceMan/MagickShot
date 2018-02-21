@@ -15,14 +15,15 @@ cyan="#0088CC"
 # Geometry
 thumbwidth=332
 thumbpadx=0
-thumbpady=438
-anchor=r
+thumbpady=0
+anchor=l
 
 # Save Location
 keepcopy=yes
 filename=$(date +"%m_%d_%Y_%T")
 imagepath="Documents/Pictures/Screenshots/$NAME"
 videopath="Documents/Videos/Screenrecord/$NAME"
+outfile="/tmp/MagickShot" #Uploader output file
 
 # Other
 uploader=imgur
@@ -35,8 +36,8 @@ videoformat=webm
 # Functions, and manipulation
 #  Everything is directly sourced, modify with caution.
 #  If you want a custom uploader, it goes here.
-thumbposy=$thumbpady
-thumbposx=$(($resx - $thumbwidth - $thumbpadx))
+thumbposx=$(xdotool getmouselocation|sed 's/:/ /g'|awk '{print $2}')
+thumbposy=$(xdotool getmouselocation|sed 's/:/ /g'|awk '{print $4}')
 
 dzenthumbopts=(
 "-p $killdelay"
@@ -45,7 +46,8 @@ dzenthumbopts=(
 "-y $thumbposy"
 "-x $thumbposx"
 "-ta $anchor"
-'-e "onstart=uncollapse;button2=exit"'
+"-e"
+'onstart=uncollapse;button1=exit'
 )
 
 ffmpegopts=(
@@ -61,4 +63,9 @@ imgur()
     -F "image"=@"$i" https://api.imgur.com/3/upload.xml |\
     grep -Eo '<deletehash>[^<]+|<[a-z_]+>http[^<]+'|\
     sed 's/^<.\|_./\U&/g;s/_/ /;s/<\(.*\)>/\x1B[0;34m\1:\x1B[0m /'
+}
+
+noupload()
+{
+  echo "Location: "$i
 }

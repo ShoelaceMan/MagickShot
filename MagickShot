@@ -13,7 +13,6 @@ source "$confdir/config"
 resx=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $2}')
 resy=$(xdpyinfo  | grep 'dimensions:' | sed 's/x/ /' | awk '{print $3}')
 thumbfile=$(mktemp --suffix=.xpm)
-outfile=$(mktemp)
 
 usage()
 {
@@ -31,7 +30,7 @@ usage()
 
 cleanup()
 {
-  rm $thumbfile $outfile
+  rm $thumbfile
   if [ $keepcopy = "no" ]; then
     rm -rf $saveas
   fi
@@ -40,8 +39,8 @@ cleanup()
 default()
 {
   saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
-  import -window root -transparent black "$saveas"
   echo "Captured as $saveas!"
+  G=-1
 }
 
 slopread()
@@ -55,7 +54,7 @@ image()
 {
   ft="image"
   saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
-  import -window root -crop $G "$saveas"
+  import -window root -crop $G -transparent black "$saveas"
 }
 
 video()
@@ -85,14 +84,16 @@ upload()
     $uploader
   done | tee $outfile
   echo "Uploading complete!"
-  for i in $(cat $outfile | awk '{print $2}'); do
-    echo $i|$clipboard
-    sleep .1 #Wait for deletion hash
-  done
+  while read line; do
+    echo $line|$clipboard
+  done < <(cat $outfile | awk '{print $2}')
 }
 
 main()
 {
+  #Empty outfile
+  echo '' > $outfile
+
   #Argument parsing
   if [[ -z $@ ]]; then
     usage
@@ -143,11 +144,11 @@ main()
         echo "Hiding thumbnail!"
         showthumb=no
         ;;
-      '-o','--output')
+      '-o')
         shift
         saveas=$1
         ;;
-      '-u','--uploader')
+      '-u')
         shift
         uploader=$1
         ;;
