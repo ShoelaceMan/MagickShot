@@ -47,7 +47,6 @@ dzenthumbopts=(
 "-ta $thumbanchor"
 "-sa $anchor"
 "-w 480"
-"-l 2"
 "-e"
 'onstart=collapse;entertitle=uncollapse;leavetitle=collapse;button1=exit'
 )
