@@ -47,12 +47,7 @@ slopread()
 {
   # Read slop input
   echo "Running slop!"
-  if read -r X Y W H G ID < <(slop -f "%x %y %w %h %g %i"); then
-    :
-  else
-    cleanup
-    exit 2
-  fi
+  read -r X Y W H G ID < <(slop -f "%x %y %w %h %g %i")
 }
 
 image()
