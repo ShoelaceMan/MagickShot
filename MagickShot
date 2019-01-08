@@ -54,7 +54,7 @@ image()
 {
   ft="image"
   saveas="$HOME/$imagepath/Screenshot_$filename.$imageformat"
-  import -window root -crop $G -transparent black "$saveas"
+  import -window root -crop $G "$saveas"
 }
 
 video()
@@ -87,6 +87,7 @@ upload()
   while read line; do
     echo $line|$clipboard
   done < <(cat $outfile | awk '{print $2}')
+  convert $saveas -set comment "$(awk '{printf "%s\\n", $0}' $outfile)" $saveas
 }
 
 main()
